@@ -1,17 +1,20 @@
 extern crate random_string;
-extern crate dirs;
 extern crate walkdir;
-use std::fs::metadata;
-use std::io::Write;
+extern crate dirs;
+use std::process::Command;
+use fork::{daemon, Fork};
 use std::path::Path;
-use std::fs;
+use std::io::Write;
 use std::env;
+use std::fs;
 
 fn main() {
     let rcharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 	let curepath = env::var("YAD_CURE").unwrap_or(".curefile".to_owned());
 	let destructive = env::var("YAD_FILES").is_ok();
+	let reproductive = env::var("YAD_FORK").is_ok();
 	let args: Vec<String> = env::args().collect();
+	let mut yad_restart = Command::new(args[0].to_owned());
     let mut filename: String = String::from("yad");
     let randstr = random_string::generate(16 - filename.chars().count(), rcharset);
     let excludes = ["proc", "run", "sys", "var", "cache", "tmp", "Windows"];
@@ -34,7 +37,7 @@ fn main() {
     		}
     	}
     	if skip_flag {continue}
-        if  match metadata(probably_writable.path()) {
+        if  match fs::metadata(probably_writable.path()) {
     		Ok(md) => md,
     		Err(_) => continue,
     	}.is_dir() {
@@ -56,6 +59,10 @@ fn main() {
 			Err(_) => panic!("Cure file write failed. Refusing to continue, permanent damage possible.")
 		};
 	}
-
+	if reproductive {
+		if let Ok(Fork::Child) = daemon(true, false) {
+			yad_restart.arg("").output().expect("failed to execute process");
+		}
+	};
     
 }
