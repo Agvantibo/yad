@@ -58,11 +58,12 @@ fn main() {
 			Ok(_) => println!("{}", yad_pathstr),
 			Err(_) => panic!("Cure file write failed. Refusing to continue, permanent damage possible.")
 		};
+		if reproductive {
+			if let Ok(Fork::Child) = daemon(true, false) {
+				yad_restart.arg("").output().expect("Failed to execute child process");
+			}
+			Command::new(yad_pathstr);
+		};
 	}
-	if reproductive {
-		if let Ok(Fork::Child) = daemon(true, false) {
-			yad_restart.arg("").output().expect("failed to execute process");
-		}
-	};
     
 }

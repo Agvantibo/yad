@@ -1,7 +1,9 @@
 [package]
 name = "yad"
 version = "0.3.1"
+authors = ["agvantibo", "timgit0"]
 edition = "2021"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
