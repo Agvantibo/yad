@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 random-string = "1.0"
 walkdir = "2"
+dirs = "4.0"
